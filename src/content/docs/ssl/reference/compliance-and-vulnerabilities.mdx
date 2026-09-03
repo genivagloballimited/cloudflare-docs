@@ -35,7 +35,7 @@ Cloudflare's AOC covers Cloudflare's own infrastructure. It does not automatical
 
 ## Configure TLS settings
 
-Apply all three steps. A PCI scan checks each layer independently — completing only some steps will still result in findings.
+Steps 1 and 2 are required for PCI DSS compliance. Step 3 is Cloudflare's recommendation for a stronger configuration but is not mandated by PCI DSS v4.0, which sets TLS 1.2 as the minimum. A PCI scan checks each layer independently — completing only Steps 1 and 2 is sufficient to meet the standard.
 
 ### Step 1: Set minimum TLS version to 1.2
 
@@ -52,6 +52,10 @@ Refer to [Minimum TLS Version](/ssl/edge-certificates/additional-options/minimum
 ### Step 2: Configure PCI DSS cipher suites
 
 PCI DSS prohibits weak and deprecated cipher algorithms. You must restrict your zone to the PCI DSS-approved cipher list.
+
+:::note[Prerequisite]
+Cipher suite customization requires an [Advanced Certificate Manager](/ssl/edge-certificates/advanced-certificate-manager/) subscription.
+:::
 
 :::note
 - You cannot configure specific TLS 1.3 cipher suites. When you [enable TLS 1.3](#step-3-enable-tls-13-recommended), Cloudflare automatically uses all supported TLS 1.3 cipher suites, all of which meet PCI DSS requirements. The cipher list in this step applies to TLS 1.2 connections only.
@@ -207,9 +211,9 @@ Cloudflare's WAF blocking scanner probes is not a compliance failure — a corre
 
 ### Non-standard ports
 
-Cloudflare proxies a [defined set of HTTP and HTTPS ports](/fundamentals/reference/network-ports/). Connections to ports outside that list are not proxied, and either reach your origin directly or are refused, depending on your origin configuration.
+Cloudflare proxies a [defined set of HTTP and HTTPS ports](/fundamentals/reference/network-ports/). For ports outside that list, Cloudflare's anycast network may cause those ports to appear open at the TCP layer even though they are not proxied — the TCP connection is accepted at the edge but HTTP/HTTPS requests are blocked at the application layer before reaching your origin.
 
-If an ASV scan targets ports outside the proxied set, results for those ports reflect your origin's behavior rather than Cloudflare's. Configure your scan to target the ports your application actually serves on.
+If an ASV scan targets non-proxied ports, findings for those ports reflect Cloudflare's edge behavior rather than your origin. Configure your scan to target the ports your application actually serves on, and provide your QSA with the [network ports reference](/fundamentals/reference/network-ports/) to document the expected behavior.
 
 ## Vulnerability mitigations
 
